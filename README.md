@@ -35,7 +35,7 @@ sc = SCSolver(OmegaM=0.1)
 sc.DeltaVirial(a=0.5)
 
 # self-similar collapse solver 
-from Spheric import ReducedOrbit
+from SpheriC import ReducedOrbit
 orbit = ReducedOrbit(epsilon=0.3)
 orbit.solve()
 ```
