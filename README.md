@@ -39,7 +39,7 @@ from SpheriC import ReducedOrbit
 orbit = ReducedOrbit(epsilon=0.3)
 orbit.solve()
 ```
-For more detailed examples on the usage, see the enclosed `examples/Example.ipynb` jupyter notebook.
+For more detailed examples on the usage, see the enclosed [`examples/Example.ipynb`](https://github.com/Kambrian/SpheriC/blob/main/examples/Example.ipynb) jupyter notebook.
 
 ## References:
 If you make use of this code, please cite the following paper:
