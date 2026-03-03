@@ -4,11 +4,13 @@ Python package for spherical collapse calculations including monolithic and self
 ## How to Use These Files
 ### Step 1: Download the code
 download with 
-`git clone ....`
-or download zip file and extract its content.
+```bash
+git clone https://github.com/Kambrian/SpheriC.git
+```
+or download the zip file and extract its content.
 
 ### Step 2: Setup path
-Assuming you cloned or extracted the package to SPHERIC_DIR (e.g., '/home/user/SpheriC'), you need to add it to your python path.
+Assuming you cloned or extracted the package to SPHERIC_DIR (e.g., `/home/user/SpheriC`), you need to add it to your python path.
 
 In `bash` (replace `$SPHERIC_DIR` with your actual path)
 ```bash
