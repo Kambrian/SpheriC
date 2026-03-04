@@ -44,8 +44,8 @@ For more detailed examples on the usage, see the enclosed [`examples/Example.ipy
 ## References:
 If you make use of this code, please cite the following paper:
 
-- Jiaxin Han, The many boundaries of the stratified dark matter halo, RAA, 2026 (arxiv:2603.02852)[
-http://arxiv.org/abs/2603.02852]
+- Jiaxin Han, The many boundaries of the stratified dark matter halo, RAA, 2026, [arxiv:2603.02852](
+http://arxiv.org/abs/2603.02852)
 
 ## Contact:
 Jiaxin Han (jiaxin.han #at# sjtu.edu.cn)

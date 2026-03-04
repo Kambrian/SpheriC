@@ -18,8 +18,8 @@ Author:
   
 Reference:
 The equations and variables are based on the following review paper:
-Han 2026, The multiple boundaries of the stratified dark matter halo (arxiv:2603.02852)[
-http://arxiv.org/abs/2603.02852]
+Han 2026, The multiple boundaries of the stratified dark matter halo, [arxiv:2603.02852](
+http://arxiv.org/abs/2603.02852)
 '''
 import numpy as np
 import matplotlib.pyplot as plt
