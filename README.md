@@ -7,7 +7,7 @@ Python package for spherical collapse calculations including monolithic and self
 
 ![Example plot](examples/orbit_snap2.jpg)
    
-## How to Use These Files
+## How to Use it
 ### Step 1: Download the code
 download with 
 ```bash
