@@ -21,7 +21,8 @@ Author:
 
 Reference: 
     Fillmore & Goldreich 1984
-    Han, J. 2026, RAA
+    Han, J. 2026, RAA (arxiv:2603.02852)[
+http://arxiv.org/abs/2603.02852]
 '''
 
 import numpy as np
