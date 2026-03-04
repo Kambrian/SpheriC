@@ -1,5 +1,11 @@
 # SpheriC
-Python package for spherical collapse calculations including monolithic and self-similar collapse models.  
+Python package for spherical collapse calculations including monolithic and self-similar collapse models. 
+
+## What it can do:
+- Predicting turnaround and virialization properties (e.g., time, density contrast), as well as shell orbit, of top-hat spherical collapse in any cosmology
+- Computing self-similar orbits and various halo profiles (mass, density, velocity, mass flow rate) in Einstein-de-Sitter universe
+
+![Example plot](examples/orbit_snap2.jpg)
    
 ## How to Use These Files
 ### Step 1: Download the code
@@ -39,7 +45,8 @@ from SpheriC import ReducedOrbit
 orbit = ReducedOrbit(epsilon=0.3)
 orbit.solve()
 ```
-For more detailed examples on the usage, see the enclosed [`examples/Example.ipynb`](https://github.com/Kambrian/SpheriC/blob/main/examples/Example.ipynb) jupyter notebook.
+
+For more detailed examples on the usage, see the enclosed [`examples/Example.ipynb`](examples/Example.ipynb) jupyter notebook.
 
 ## References:
 If you make use of this code, please cite the following paper:
