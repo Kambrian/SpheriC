@@ -21,8 +21,12 @@ Author:
 
 Reference: 
     Fillmore & Goldreich 1984
-    Han, J. 2026, RAA, [arxiv:2603.02852](
-http://arxiv.org/abs/2603.02852)
+    Han, J. 2026, RAA, arXiv:2603.02852v2
+    https://arxiv.org/abs/2603.02852v2
+
+Equation numbers below refer to Han (2026), arXiv v2 PDF, unless explicitly
+marked FG84. The journal proof has the same numbering; Appendix A.1--A.17
+in the arXiv PDF are written A1--A17 in the proof.
 '''
 
 import numpy as np
@@ -54,9 +58,10 @@ def intercept(x, y, y0, k=1):
 class ReducedOrbit:
     def __init__(self, epsilon=0.3, mu0=lambda x:x, j=1e-2):
         '''object for solving the dimensionless orbit lambda(tau) (Eq 20, 25 of FG84) in 3d (n=3) case
+        Review: Eqs. (71)--(72), with turnaround conditions in Eq. (73).
 
-        epsilon: float between [0,1], slope of the initial mass perturbation, delta_i=(M_i/M_0)^-epsilon (Eq-11 of FG84)
-        mu0:     function of the initial guess for the reduced mass profile (Eq-21 of FG84)
+        epsilon: float between [0,1], slope of the initial mass perturbation, delta_i=(M_i/M_0)^-epsilon (Eq-11 of FG84; review Eq. (56))
+        mu0:     function of the initial guess for the reduced mass profile (Eq-21 of FG84; review Eq. (62))
         j:       J/(r_ta^2/t_ta), reduced angular momentum. set to a tiny non-zero value to avoid divergence at the center.
                  if j==0., however, a special integrator implementing a reflecting boundary will be adopted to solve the orbit.
         #rmin: the minimum radius when evaluating the mass profile
@@ -71,17 +76,19 @@ class ReducedOrbit:
         self.PreCollapse()
 
     def Lambd_func(self, tau):
-        '''Eq-24 of FG84'''
+        '''Turnaround-radius scale Lambda(tau), Eq. (65); also FG84 Eq. (24).'''
         return tau**(2./3.*(1+self.e3))
 
     def lambd_tau2(self, tau, lambd):
-        '''Eq-25 of FG84'''
+        '''Reduced radial acceleration, Eq. (72), or Eq. (71) for j=0.
+        The radial gravitational term is also FG84 Eq. (25).
+        '''
         l=np.abs(lambd)
         s=np.sign(lambd) #account for the sign of the acceleration direction
         return -s*np.pi**2/8.*(tau**self.e3/l)**2*self.mu(l/self.Lambd_func(tau))+self.j**2/l**3
 
     def rfunc(self, tau, y):
-        '''vector version of the equation of motion, to be fed to ODE solver
+        '''vector version of the equation of motion, Eq. (72), to be fed to ODE solver
             y: [lambda, lambda_dot]
         return derivative of y over tau
         '''
@@ -89,6 +96,7 @@ class ReducedOrbit:
 
     def integrate(self, rconv=1e-3, n_peri_min=10, atol=1e-4, max_timestep=1e-2, **kwargs):
         '''integrate the orbits so that all the orbits reaching out to `r>=rconv*Rta` are resolved (Rta being current turnaround radius).
+          Integrates Eqs. (71)--(72) from the boundary conditions in Eq. (73).
           using RKF78infall method if j>0, and RKF78reflect if j==0.
             `n_peri_min` specifies the minimum number of pericenter passages to integrate to, in addition to `rconv` requirement.
             `atol`: absolute error in lambda and v_lambda
@@ -121,6 +129,7 @@ class ReducedOrbit:
 
     def solve(self, tol_rel=5e-2, rconv=1e-3, max_iter=10, n_peri_min=20, atol=1e-4, plot_on=True):
         '''evolve the system towards convergence
+        Iterates the crossing-sum mass, Eq. (70), and orbit, Eqs. (71)--(73).
         convergence is reached when the mass profile beyond `rconv` differs less than `tol_rel` between two iterations
         `max_iter`: maximum number of mass profile iterations
         `n_peri_min`: minimum number of periods in orbit integration
@@ -153,7 +162,10 @@ class ReducedOrbit:
             plt.show()
             
     def locate_depletion(self, k=1):
-        '''get depletion radius and density'''
+        '''Get the first-caustic radius and mean enclosed density.
+        Uses the single-stream mass in Eq. (A13) and density in Eqs. (A16)--(A17).
+        rho_id is the enclosed mean density / rho_ta, not the local density.
+        '''
         self.locate_bounds()
         y=self.lambd/self.Lambd
         self.x_id=y[self.ind_caustic[0]] #r_id/Rta
@@ -163,13 +175,16 @@ class ReducedOrbit:
         self.lambd_id=self.x_id*self.Lambd_func(self.tau_id) 
 
     def get_mass2(self, x):
-        '''alternative method to get_mass(). this is not accurate. deprecated.'''
+        '''Trapezoidal evaluation of the mass integral, Eq. (68).
+        Alternative to get_mass(); this is not accurate. Deprecated.
+        '''
         h=np.heaviside(x-self.lambd/self.Lambd, 1)
         y=h/self.tau**(1+2*self.e3)
         return 2*self.e3*integrate.trapezoid(y, self.tau)
 
     def get_mass(self, x, k=1):
         '''the dimensionless mass profile mu(x)=M/M_ta (x) where x=r/R_ta=lambd/Lambd
+        Evaluates the oriented shell-crossing sum in Eq. (70).
         k=1 or 3, order of interpolation method. 
         it seems k=3 has some occasional fluctuations, so k=1 preferred.
         (k=1 very slightly higher in the inner part, by 1e-3 factor)
@@ -195,7 +210,7 @@ class ReducedOrbit:
         return m
 
     def get_mass_deriv(self,x, k=3):
-        '''derivative of mu(x).
+        '''derivative of mu(x), evaluated from the crossing sum in Eq. (A8).
         k=1 or 3 specifies the type of interpolation (k=1: linear; k=3: cubic spline) to use when finding the intersecting time of the orbit.
         k=3 leads to more consistent result with the mass profile shape of get_mass().
         k=1 gives a slightly shallower slope in the inner part'''
@@ -207,11 +222,11 @@ class ReducedOrbit:
         return y.sum()*2*self.e3
 
     def get_density(self, x, k=3):
-        '''rho(x)/rho_ta, at x=r/R_ta'''
+        '''rho(x)/rho_ta, at x=r/R_ta, from Eq. (A3).'''
         return self.get_mass_deriv(x, k)/3./x/x
 
     def get_MFR2(self,x, k=3):
-        '''MFR/(M_ta/t) at x=r/R_ta.
+        '''MFR/(M_ta/t) at x=r/R_ta, from the velocity-weighted sum in Eq. (A10).
         alternative (and equivalent) to get_MFR()
         when using k=1, this is slightly noisier than get_MFR(); when using k=3, identical to get_MFR()?
         '''
@@ -221,33 +236,34 @@ class ReducedOrbit:
         return y.sum()*2*self.e3
 
     def get_MFR(self, x, k=3):
-        '''MFR/(M_ta/t) at x=r/R_ta
+        '''MFR/(M_ta/t) at x=r/R_ta, from Eq. (77).
         k=1 or 3 specifies the type of interpolation (k=1: linear; k=3: cubic spline) to use when finding the intersecting time of the orbit
         different values of k lead to slightly different results in the inner region
         '''
         return 2./3*(1+self.e3)*x*self.get_mass_deriv(x, k)-self.get_mass(x)*2.*self.e3
 
     def get_vel(self, x):
-        '''vmean/(R_ta/t)'''
+        '''vmean/(R_ta/t), from Eqs. (A4)--(A6).'''
         return self.get_MFR(x)/self.get_mass_deriv(x)
 
     def GetMass(self, x):
-        '''vector version of get_mass'''
+        '''Vector version of get_mass, Eq. (70).'''
         return np.array(list(map(self.get_mass, x)))
 
     def GetDensity(self, x):
-        '''vector version of get_density'''
+        '''Vector version of get_density, Eq. (A3).'''
         return np.array(list(map(self.get_density, x)))
 
     def GetMFR(self, x):
-        '''vector version of get_MFR'''
+        '''Vector version of get_MFR, Eq. (77).'''
         return np.array([self.get_MFR(a) for a in x])
 
     def GetVel(self, x):
-        '''vector version of get_vel'''
+        '''Vector version of get_vel, Eqs. (A4)--(A6).'''
         return np.array(list(map(self.get_vel, x)))
 
     def update_mu(self, n=300):
+        '''Sample the crossing-sum mass, Eq. (70), and interpolate it in log-log space.'''
         x=np.logspace(np.log10(self.rmin), 0, n)
         if x[-1]<1: 
             x.append(1)
@@ -270,7 +286,9 @@ class ReducedOrbit:
         return x,delta
 
     def locate_bounds(self):
-        '''find indices of peri and apo centers'''
+        '''Find peri/apocenters and caustics.
+        Caustics are local maxima of x(tau)=lambda/Lambda, Eq. (74).
+        '''
         ind_peri=np.where((self.vlambd[:-1]<0)&(self.vlambd[1:]>0))[0]+1 #out-bound loc of peri
         #ind_apo=np.where((self.vlambd[:-1]>=0)&(self.vlambd[1:]<0))[0] #out-bound loc of apo
         ind_caustic=argrelextrema(self.lambd/self.Lambd, np.greater)[0] #the apocenter at a given time, location of caustics.
@@ -296,6 +314,8 @@ class ReducedOrbit:
 
     def PreCollapse(self, phi_max=np.pi):
         '''orbit before turnaround. classical EdS SC solution without shell crossing.
+        Radius/time follow Eqs. (A11)--(A12), equivalently Eqs. (8)--(9).
+        The shell velocity is obtained from Eq. (A14).
         phi_max=np.pi will integrate till turnaround
         phi_max=2*np.pi will integrate till collapse (2*turnaround time)
         '''

@@ -18,8 +18,9 @@ Author:
   
 Reference:
 The equations and variables are based on the following review paper:
-Han 2026, The multiple boundaries of the stratified dark matter halo, [arxiv:2603.02852](
-http://arxiv.org/abs/2603.02852)
+Han 2026, The many boundaries of the stratified dark matter halo,
+arXiv:2603.02852v2, https://arxiv.org/abs/2603.02852v2.
+Equation numbers below refer to that PDF and match the journal proof.
 '''
 import numpy as np
 import matplotlib.pyplot as plt
@@ -27,14 +28,16 @@ from scipy import integrate
 from scipy.interpolate import interp1d
 
 def ArateSquare(a, w, kappa):
-    '''(da/dtau)^2, where a is the scalefactor, tau=sqrt(OmegaM0)*H0*t
+    '''(da/dtau)^2, Eqs. (13) and (15), where tau=sqrt(OmegaM0)*H0*t.
+       a denotes the background or perturbation scalefactor as appropriate.
        w: OmegaL0/OmegaM0
        kappa: the energy (or curvature) parameter
     '''
     return 1./a+w*a*a-kappa 
 
 def ArateInv(a, w, kappa):
-    '''dtau/da, where a is the scalefactor, tau=sqrt(OmegaM0)*H0*t
+    '''dtau/da, the expanding-branch inverse of Eqs. (13) and (15).
+       tau=sqrt(OmegaM0)*H0*t.
        w: OmegaL0/OmegaM0
        kappa: the energy (or curvature) parameter
     '''
@@ -43,17 +46,20 @@ def ArateInv(a, w, kappa):
     return 1./np.sqrt(ArateSquare(a,w,kappa)) 
 
 def TimeIntegral(a, w, kappa):
-    '''tau=sqrt(OmegaM0)*H0*t, at scalefactor a'''
+    '''tau=sqrt(OmegaM0)*H0*t, by integrating Eqs. (13)/(15).
+    The turnaround cases are Eqs. (19)--(20).
+    '''
     return integrate.quad(ArateInv, 0, a, (w, kappa))[0]
 
 
 def TimeIntegralTa(ap_ta, w):
-    '''tau=sqrt(OmegaM0)*H0*t, at turnaround scalefactor ap_ta'''
+    '''Perturbation turnaround time tau, Eqs. (18)--(19), at radius ap_ta.'''
     kappa=ArateSquare(ap_ta, w, 0)
     return TimeIntegral(ap_ta, w, kappa)
 
 def TimeIntegralAp(ap, ap_ta, w, side='left'):
     '''tau=sqrt(OmegaM0)*H0*t, integrated from 0 to ap, for a perturbation which turnaround at ap_ta
+    Uses the timing integral in Eq. (19), truncated at ap, and time-reversal symmetry.
     side= 'left' or 'right', whether ap is before or after ap_ta.
     '''
     kappa=ArateSquare(ap_ta, w, 0)
@@ -66,7 +72,7 @@ def TimeIntegralAp(ap, ap_ta, w, side='left'):
 
 class SCSolver(object):
     def __init__(self, OmegaM0, OmegaL0=None, a_max=1.):
-        '''cosmological parameters at a=1 (z=0)
+        '''cosmological parameters at a=1 (z=0), as used in Eqs. (13) and (15).
         If OmegaL0 is not given, then set to 1-OmegaM0.
         a_max: maximum scalefactor at which the model will be applied to. This is only required for Lambda=0 universe.
         '''
@@ -89,21 +95,23 @@ class SCSolver(object):
         self.ap_root=interp1d(np.log(tau), np.log(ap)) 
     
     def OmegaEvo(self, a):
+        '''Density-parameter evolution derived from the Friedmann equation, Eq. (6).'''
         OmegaM=1./(1+self.w*a**3-self.wk*a)
         OmegaL=self.w*a**3*OmegaM
         OmegaK=1-OmegaM-OmegaL
         return OmegaM,OmegaL,OmegaK
         
     def HubbleRatioSquare(self, a):
-        '''(H(a)/H0)^2'''
+        '''(H(a)/H0)^2, from the background Friedmann equation, Eq. (6).'''
         return self.OmegaM0/a/a/a+self.OmegaL0+self.OmegaK0/a/a
     
     def TurnaroundAp(self, tau):
-        '''scalefactor (radius) of the perturbation that turns around at time tau'''
+        '''Perturbation turnaround radius obtained by inverting Eq. (19).'''
         return np.exp(self.ap_root(np.log(tau)))
 
     def TimeIntegralAp(self, ap, ap_ta, side='left'):
         '''tau=sqrt(OmegaM0)*H0*t, integrated from 0 to ap, for a perturbation which turnaround at ap_ta.
+        Uses Eqs. (18)--(19), with time reversal for the post-turnaround branch.
         ap: r/rL0, the radius of the perturbation normalized by its Lagrangian radius at the reference time (a=1).
         ap_ta: specifies the energy parameter (or curvature) of the perturbation, mapped uniquely to a turnaround time a_ta. 
                ap_ta=TurnaroundAp(TimeIntegral(a_ta)).
@@ -112,21 +120,26 @@ class SCSolver(object):
         return TimeIntegralAp(ap, ap_ta, self.w, side)
     
     def TimeIntegral(self, a):
-        '''tau=sqrt(OmegaM0)*H0*t, at scalefactor a'''
+        '''Background time tau=sqrt(OmegaM0)*H0*t, as in Eq. (20).'''
         return TimeIntegral(a, self.w, self.wk)
     
     def Age(self, a):
-        '''cosmic time in unit of the Hubble time 1/H0'''
+        '''Cosmic time in units of 1/H0, using the time variable defined with Eq. (13).'''
         return self.TimeIntegral(a)/np.sqrt(self.OmegaM0)
     
     def TurnaroundOverdensity(self, a):
-        '''delta=rho_ta/rho_bg-1 at scalefactor a of the universe'''
+        '''delta=rho_ta/rho_bg-1 at scalefactor a, using Eqs. (17), (19)--(20).
+        The EdS limit is Eq. (12).
+        '''
         I=self.TimeIntegral(a)
         ap=self.TurnaroundAp(I)
         return (a/ap)**3-1.
     
     def VirialAp(self, a, return_tau=False):
         '''virial radius in terms of ap: ap_vir=Rvir/R_L0
+        Uses t_c=2*t_ta and r_vir=r_ta/2, the EdS limit of Eq. (26).
+        This approximation is retained for Lambda != 0; the full Lambda-dependent
+        virial-radius relation in Eq. (26) is not solved here.
         if `return_tau`=True, also return the time integral, `\tau`, at `a`.
         '''
         tau=self.TimeIntegral(a)
@@ -140,6 +153,8 @@ class SCSolver(object):
     def VirialDelta(self, a):
         '''DeltaCrit=rho_vir(a)/rho_crit(a)
         DeltaMean=rho_vir(a)/rho_mean(a)
+        Density conversions use Eqs. (16)--(17) and the VirialAp approximation.
+        The EdS limit is Eq. (27); this is not the fitting formula in Eq. (28).
         
         return DeltaCrit,DeltaMean'''
         ap_c=self.VirialAp(a)
@@ -148,7 +163,8 @@ class SCSolver(object):
         return DeltaCrit,DeltaMean
 
     def RadiusTimer(self, r, a_ta=1):
-        '''orbital time evolution of a shell 
+        '''orbital time evolution of a shell
+        Uses Eqs. (18)--(20); the EdS case reduces to Eqs. (8)--(9).
         input:
             r: radius of shell normalized by turnaround radius. r should be a scalar.
             a_ta: scalefactor of the universe when the shell turns around.

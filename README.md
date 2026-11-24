@@ -1,6 +1,6 @@
 # SpheriC
 
-**Version 0.1.2** — Published with Han (2026), *The many boundaries of the stratified dark matter halo*, [arXiv:2603.02852](http://arxiv.org/abs/2603.02852)
+**Version 0.1.3** — Published with Han (2026), *The many boundaries of the stratified dark matter halo*, [arXiv:2603.02852](http://arxiv.org/abs/2603.02852)
 
 Python package for spherical collapse calculations including monolithic and self-similar collapse models.
 
@@ -194,4 +194,5 @@ jiaxin.han@sjtu.edu.cn
 
 ## Version History
 
+- **v0.1.3** (2026-11-24) — Fix inverse-slope interpolation for rising shell crossings in the self-similar mass profile; add function-level equation references to Han (2026), arXiv v2 and the journal proof. Numerical defaults are unchanged.
 - **v0.1.2** (2026) — Initial release accompanying Han (2026)
