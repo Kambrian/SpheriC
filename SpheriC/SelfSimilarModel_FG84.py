@@ -183,7 +183,7 @@ class ReducedOrbit:
             sel_rise=(y[:-1]<=x)&(y[1:]>x)
             sel_fall=(y[:-1]>x)&(y[1:]<=x)
             #apocenter intersections are automatically skipped
-            t_rise=self.tau[:-1][sel_rise]+dy[sel_rise]/dt[sel_rise]*(x-y[:-1][sel_rise])
+            t_rise=self.tau[:-1][sel_rise]+dt[sel_rise]/dy[sel_rise]*(x-y[:-1][sel_rise])
             t_fall=self.tau[:-1][sel_fall]+dt[sel_fall]/dy[sel_fall]*(x-y[:-1][sel_fall])
             m=np.sum(t_fall**(-2.*self.e3))-np.sum(t_rise**(-2.*self.e3))
         else:
